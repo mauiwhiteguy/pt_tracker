@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="PT Tracker">
+  <title>PT Tracker</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #111827;
+      color: white;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      background: #f97316;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+    .title {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+    }
+    .test-box {
+      background: #1f2937;
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 16px;
+      background: #f97316;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:active { background: #ea580c; }
+    .status { 
+      margin-top: 16px;
+      padding: 12px;
+      background: #374151;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">⏱️</div>
+    <div class="title">
+      <span style="color: white;">PT</span><span style="color: #f97316;">TRACKER</span>
+    </div>
+  </div>
+
+  <div class="test-box">
+    <h2>GitHub Pages Test</h2>
+    <p style="margin: 16px 0;">If you can see this, it's working!</p>
+    <button onclick="testStorage()">Test Storage</button>
+    <div id="status" class="status" style="display: none;"></div>
+  </div>
+
+  <script>
+    function testStorage() {
+      const status = document.getElementById('status');
+      status.style.display = 'block';
+      
+      try {
+        // Test localStorage
+        const testData = { test: 'value', timestamp: Date.now() };
+        localStorage.setItem('pt-test', JSON.stringify(testData));
+        const retrieved = JSON.parse(localStorage.getItem('pt-test'));
+        
+        if (retrieved.test === 'value') {
+          status.innerHTML = '✅ Storage is working!<br>Your data will persist.';
+          status.style.background = '#065f46';
+        } else {
+          status.innerHTML = '❌ Storage test failed';
+          status.style.background = '#7f1d1d';
+        }
+      } catch (e) {
+        status.innerHTML = '❌ Error: ' + e.message;
+        status.style.background = '#7f1d1d';
+      }
+    }
+  </script>
+</body>
+</html>
