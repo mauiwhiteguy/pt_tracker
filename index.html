@@ -644,24 +644,6 @@ function handleImport(event) {
   };
   reader.readAsText(file);
 }
-      
-      // Basic validation
-      if (importedData.habits && importedData.logs) {
-        if (confirm('This will overwrite your current habits. Are you sure?')) {
-          state = importedData;
-          saveState();
-          renderApp();
-          alert('Import successful!');
-        }
-      } else {
-        alert('Invalid backup file format.');
-      }
-    } catch (err) {
-      alert('Error reading file. Make sure it is a valid JSON backup.');
-    }
-  };
-  reader.readAsText(file);
-}
     
 function renderBottomNav() {
   const { currentPage } = state;
@@ -771,8 +753,8 @@ function renderBottomNav() {
     
     window.selectBodyPart = (part) => {
       state.newExercise.bodyPart = part;
-      render(); // This forces the modal to show the orange "active" state on the button
-};
+      render(); // This "refreshes" the screen so the button turns orange
+    };
 
     window.selectCustomBodyPart = () => {
       const custom = prompt('Enter custom body part:');
