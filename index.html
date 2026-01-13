@@ -323,38 +323,41 @@
       const isComplete = completedSets === totalSets;
 
       return `
-        <div 
-          class="p-6 rounded-2xl transition-all cursor-pointer relative overflow-hidden ${
-            isComplete ? 'bg-orange-500/20 border-2 border-orange-500' : 'bg-gray-800 border-2 border-transparent'
-          }"
-          onclick="toggleComplete(${ex.id}, ${totalSets})"
-        >
-          ${totalSets > 1 ? `
-            <div class="absolute inset-0 pointer-events-none overflow-hidden">
-              <div class="h-full transition-all duration-300" style="
-                width: ${progress}%;
-                background: ${progress === 100 
-                  ? 'rgba(249, 115, 22, 0.3)' 
-                  : 'linear-gradient(to right, rgba(249, 115, 22, 0.3) 0%, rgba(249, 115, 22, 0.3) 85%, rgba(249, 115, 22, 0) 100%)'
-                };
-              "></div>
-            </div>
-          ` : ''}
-          <div class="relative z-10">
-            <div class="flex justify-between items-start mb-2">
-              <h3 class="text-xl font-bold">${ex.name}</h3>
-              <div class="text-orange-500 font-bold text-lg">${ex.reps} reps${totalSets > 1 ? ` × ${totalSets}` : ''}</div>
-            </div>
-            ${ex.description ? `<p class="text-gray-400 text-sm whitespace-pre-wrap">${ex.description}</p>` : ''}
-          </div>
-          ${totalSets > 1 ? `
-            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-              <div class="text-5xl font-bold text-orange-500">${completedSets}/${totalSets}</div>
-            </div>
-          ` : ''}
+    <div 
+      class="p-6 rounded-2xl transition-all cursor-pointer relative overflow-hidden ${
+        isComplete ? 'bg-orange-500/20 border-2 border-orange-500' : 'bg-gray-800 border-2 border-transparent'
+      }"
+      onclick="toggleComplete(${ex.id}, ${totalSets})"
+    >
+      ${totalSets > 1 ? `
+        <div class="absolute inset-0 pointer-events-none overflow-hidden">
+          <div class="h-full transition-all duration-300" style="
+            width: ${progress}%;
+            background: ${progress === 100 
+              ? 'rgba(249, 115, 22, 0.3)' 
+              : 'linear-gradient(to right, rgba(249, 115, 22, 0.3) 0%, rgba(249, 115, 22, 0.3) 85%, rgba(249, 115, 22, 0) 100%)'
+            };
+          "></div>
         </div>
-      `;
-    }
+      ` : ''}
+      <div class="relative z-10">
+        <div class="flex justify-between items-start mb-2">
+          <h3 class="text-xl font-bold">${ex.name}</h3>
+          <div class="text-orange-500 font-bold text-lg">${ex.reps} reps${totalSets > 1 ? ` × ${totalSets}` : ''}</div>
+        </div>
+        ${ex.description ? `<p class="text-gray-400 text-sm whitespace-pre-wrap">${ex.description}</p>` : ''}
+      </div>
+      ${totalSets > 1 ? `
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <div class="text-5xl font-bold text-orange-500" 
+               style="text-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 1px 1px 2px rgba(255, 255, 255, 0.2);">
+            ${completedSets}/${totalSets}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
 
     function renderHabitsPage() {
       const grouped = groupByBodyPart(state.exercises);
