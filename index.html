@@ -663,9 +663,9 @@ function renderBottomNav() {
   const navItems = [
     { id: 'today', icon: calendarIcon, label: 'Today', isSvg: true },
     { id: 'habits', icon: targetIcon, label: 'Habits', isSvg: true },
-    { id: 'add', icon: '+', label: '' },
+    { id: 'add', icon: '', label: '' },  // Changed '+' to empty string
     { id: 'stats', icon: statsIcon, label: 'Stats', isSvg: true },
-    { id: 'settings', icon: settingsIcon, label: 'Settings', isSvg: true } // Changed to SVG
+    { id: 'settings', icon: settingsIcon, label: 'Settings', isSvg: true }
   ];
 
   return `
