@@ -623,6 +623,28 @@ function handleImport(event) {
     try {
       const importedData = JSON.parse(e.target.result);
       
+      // We check for YOUR specific keys: exercises and completions
+      if (importedData.exercises && importedData.completions) {
+        if (confirm('This will overwrite your current habits and progress. Are you sure?')) {
+          state = { ...state, ...importedData };
+          
+          // Save using your existing storage utilities
+          storage.save('pt-exercises', state.exercises);
+          storage.save('pt-completions', state.completions);
+          
+          render(); // Refresh the UI
+          alert('Import successful!');
+        }
+      } else {
+        alert('Invalid backup file format. Could not find exercises or completions.');
+      }
+    } catch (err) {
+      alert('Error reading file. Make sure it is a valid JSON backup.');
+    }
+  };
+  reader.readAsText(file);
+}
+      
       // Basic validation
       if (importedData.habits && importedData.logs) {
         if (confirm('This will overwrite your current habits. Are you sure?')) {
@@ -749,16 +771,16 @@ function renderBottomNav() {
     
     window.selectBodyPart = (part) => {
       state.newExercise.bodyPart = part;
-      render();
-    };
-    
+      render(); // This forces the modal to show the orange "active" state on the button
+};
+
     window.selectCustomBodyPart = () => {
       const custom = prompt('Enter custom body part:');
       if (custom && custom.trim()) {
         state.newExercise.bodyPart = custom.trim();
         render();
-      }
-    };
+  }
+};
     
     window.addExercise = addExercise;
     
