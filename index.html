@@ -548,10 +548,11 @@
       `;
     }
 
-    function renderBottomNav() {
-      const { currentPage } = state;
-      const navItems = [
-        { id: 'today', icon: '📅', label: 'Today' },
+function renderBottomNav() {
+  const { currentPage } = state;
+  const calendarIcon = `<svg width="28" height="28" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 10.5V19.5H20.5V10.5M4.5 10.5V5.5H20.5V10.5M4.5 10.5H12.5H20.5M20.5 13.5H16.5M16.5 13.5H12.5M16.5 13.5V10.5M16.5 13.5V16.5M12.5 13.5H8.5M12.5 13.5V16.5M12.5 13.5V10.5M8.5 13.5H4.5M8.5 13.5V10.5M8.5 13.5V16.5M20.5 16.5H16.5M16.5 16.5H12.5M16.5 16.5V19.5M12.5 16.5H8.5M12.5 16.5V19.5M8.5 16.5H4.5M8.5 16.5V19.5M17.5 8V3M7.5 8V3" stroke="currentColor" stroke-width="1.2"/></svg>`;
+  const navItems = [
+    { id: 'today', icon: calendarIcon, label: 'Today', isSvg: true },
         { id: 'habits', icon: '🎯', label: 'Habits' },
         { id: 'add', icon: '+', label: '' },
         { id: 'stats', icon: '📊', label: 'Stats' },
@@ -576,7 +577,7 @@
                   class="flex flex-col items-center gap-1 flex-1 ${
                     currentPage === item.id ? 'text-orange-500' : 'text-gray-400'
                   }">
-                  <span class="text-2xl">${item.icon}</span>
+                  <span class="${item.isSvg ? '' : 'text-2xl'}">${item.icon}</span>
                   <span class="text-xs font-bold">${item.label}</span>
                 </button>
               `;
