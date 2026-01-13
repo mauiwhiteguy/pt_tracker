@@ -7,8 +7,8 @@
   z-index: 9999; /* Set very high to go over habit numbers */
 
   /* Shape and Size */
-  width: 65px;
-  height: 65px;
+  width: 56px; /* Match the original 14 * 4 = 56px (w-14 in Tailwind) */
+  height: 56px;
   border-radius: 50%;
   border: none;
   display: flex;
@@ -16,13 +16,11 @@
   justify-content: center;
   cursor: pointer;
   
-  /* Neumorphic / Emboss Effect */
-  background-color: #f9fafb; /* Matches Tailwind's bg-gray-50 */
+  /* Orange styling to match your theme */
+  background-color: #f97316; /* Matches Tailwind's bg-orange-500 */
   box-shadow: 
-    6px 6px 12px rgba(0, 0, 0, 0.1),            /* Bottom-right shadow */
-    -6px -6px 12px rgba(255, 255, 255, 1),       /* Top-left highlight */
-    inset 2px 2px 5px rgba(255, 255, 255, 0.5), /* Inner subtle edge */
-    inset -2px -2px 5px rgba(0, 0, 0, 0.05);    /* Inner subtle depth */
+    0 0 25px rgba(249, 115, 22, 0.5),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
     
   transition: all 0.2s ease;
 }
@@ -31,6 +29,11 @@
 .custom-fab:active {
   transform: translateX(-50%) scale(0.95);
   box-shadow: 
-    inset 4px 4px 8px rgba(0, 0, 0, 0.1), 
-    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+    0 0 20px rgba(249, 115, 22, 0.4),
+    0 8px 12px -3px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover effect */
+.custom-fab:hover {
+  background-color: #ea580c; /* Slightly darker orange on hover */
 }
