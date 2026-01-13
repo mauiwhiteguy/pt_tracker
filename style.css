@@ -1,7 +1,7 @@
 .custom-fab {
   /* Positioning and Layering */
   position: fixed;
-  bottom: 30px;
+  bottom: 15px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999; /* Set very high to go over habit numbers */
