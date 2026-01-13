@@ -2,103 +2,697 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PT Tracker">
   <title>PT Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide-static/0.263.1/lucide.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #111827;
-      color: white;
-      padding: 20px;
+    body {
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: pan-y;
     }
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 32px;
+    * {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
-    .logo {
-      width: 64px;
-      height: 64px;
-      background: #f97316;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-    }
-    .title {
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: -0.05em;
-    }
-    .test-box {
-      background: #1f2937;
-      padding: 24px;
-      border-radius: 16px;
-      margin-bottom: 16px;
-    }
-    button {
-      width: 100%;
-      padding: 16px;
-      background: #f97316;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:active { background: #ea580c; }
-    .status { 
-      margin-top: 16px;
-      padding: 12px;
-      background: #374151;
-      border-radius: 8px;
+    input, textarea {
+      -webkit-user-select: text;
+      user-select: text;
     }
   </style>
 </head>
-<body>
-  <div class="header">
-    <div class="logo">⏱️</div>
-    <div class="title">
-      <span style="color: white;">PT</span><span style="color: #f97316;">TRACKER</span>
+<body class="bg-gray-900 text-white">
+  <div id="app">
+    <div class="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div class="text-gray-400">Loading...</div>
     </div>
   </div>
 
-  <div class="test-box">
-    <h2>GitHub Pages Test</h2>
-    <p style="margin: 16px 0;">If you can see this, it's working!</p>
-    <button onclick="testStorage()">Test Storage</button>
-    <div id="status" class="status" style="display: none;"></div>
-  </div>
-
   <script>
-    function testStorage() {
-      const status = document.getElementById('status');
-      status.style.display = 'block';
-      
-      try {
-        // Test localStorage
-        const testData = { test: 'value', timestamp: Date.now() };
-        localStorage.setItem('pt-test', JSON.stringify(testData));
-        const retrieved = JSON.parse(localStorage.getItem('pt-test'));
-        
-        if (retrieved.test === 'value') {
-          status.innerHTML = '✅ Storage is working!<br>Your data will persist.';
-          status.style.background = '#065f46';
-        } else {
-          status.innerHTML = '❌ Storage test failed';
-          status.style.background = '#7f1d1d';
+    const APP_VERSION = 'v1.0-github';
+    
+    // Storage utilities
+    const storage = {
+      save: (key, value) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+          console.log('Saved:', key);
+          return true;
+        } catch (e) {
+          console.error('Storage error:', e);
+          return false;
         }
+      },
+      load: (key) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : null;
+        } catch (e) {
+          console.error('Load error:', e);
+          return null;
+        }
+      }
+    };
+
+    // Simple state management
+    let state = {
+      currentPage: 'today',
+      exercises: storage.load('pt-exercises') || [],
+      completions: storage.load('pt-completions') || {},
+      showAddModal: false,
+      editingExercise: null,
+      newExercise: {
+        name: '',
+        reps: '',
+        description: '',
+        days: [],
+        sets: 1,
+        bodyPart: 'Upper Body'
+      }
+    };
+
+    const bodyPartOptions = ['Upper Body', 'Lower Body', 'Abs', 'Wrist', 'Knee', 'Neck'];
+    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    function setState(updates) {
+      state = { ...state, ...updates };
+      render();
+    }
+
+    function saveExercises(exercises) {
+      storage.save('pt-exercises', exercises);
+      setState({ exercises });
+    }
+
+    function saveCompletions(completions) {
+      storage.save('pt-completions', completions);
+      setState({ completions });
+    }
+
+    function getDateKey() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    function getTodayShort() {
+      return new Date().toLocaleDateString('en-US', { weekday: 'short' });
+    }
+
+    function getToday() {
+      return new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'short', 
+        day: 'numeric' 
+      }).toUpperCase();
+    }
+
+    function getTodaysExercises() {
+      const todayShort = getTodayShort();
+      return state.exercises.filter(ex => ex.days.includes(todayShort));
+    }
+
+    function groupByBodyPart(exercises) {
+      const grouped = {};
+      exercises.forEach(ex => {
+        const part = ex.bodyPart || 'Other';
+        if (!grouped[part]) grouped[part] = [];
+        grouped[part].push(ex);
+      });
+      return grouped;
+    }
+
+    function getCompletedSets(exerciseId) {
+      return state.completions[`${exerciseId}-${getDateKey()}`] || 0;
+    }
+
+    function toggleComplete(exerciseId, totalSets) {
+      const key = `${exerciseId}-${getDateKey()}`;
+      const current = state.completions[key] || 0;
+      const next = (current + 1) % (totalSets + 1);
+      
+      const newCompletions = { ...state.completions };
+      if (next === 0) {
+        delete newCompletions[key];
+      } else {
+        newCompletions[key] = next;
+      }
+      saveCompletions(newCompletions);
+    }
+
+    function addExercise() {
+      const { newExercise, editingExercise, exercises } = state;
+      
+      if (!newExercise.name || !newExercise.reps || newExercise.days.length === 0) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      if (editingExercise) {
+        const updated = exercises.map(ex =>
+          ex.id === editingExercise.id
+            ? { ...newExercise, id: editingExercise.id, reps: parseInt(newExercise.reps) }
+            : ex
+        );
+        saveExercises(updated);
+      } else {
+        const exercise = {
+          id: Date.now(),
+          ...newExercise,
+          reps: parseInt(newExercise.reps)
+        };
+        saveExercises([...exercises, exercise]);
+      }
+
+      setState({
+        showAddModal: false,
+        editingExercise: null,
+        newExercise: {
+          name: '',
+          reps: '',
+          description: '',
+          days: [],
+          sets: 1,
+          bodyPart: 'Upper Body'
+        }
+      });
+    }
+
+    function exportData() {
+      const headers = ['Name', 'Reps', 'Sets', 'Description', 'Days', 'BodyPart'].join('\t');
+      const rows = state.exercises.map(ex => [
+        ex.name,
+        ex.reps,
+        ex.sets || 1,
+        (ex.description || '').replace(/\t/g, ' ').replace(/\n/g, ' '),
+        ex.days.join(','),
+        ex.bodyPart || 'Other'
+      ].join('\t'));
+      return [headers, ...rows].join('\n');
+    }
+
+    function importData(text) {
+      try {
+        const lines = text.split('\n').filter(line => line.trim());
+        if (lines.length < 2) return false;
+
+        const imported = lines.slice(1).map((line, idx) => {
+          let values = line.split('\t');
+          
+          if (values.length < 6) {
+            const match = line.match(/^(.+?)\s+(\d+)\s+(\d+)\s+(.+?)\s+((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?:,(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun))*)\s+(.+)$/);
+            if (match) values = [match[1], match[2], match[3], match[4], match[5], match[6]];
+            else return null;
+          }
+
+          return {
+            id: Date.now() + Math.random() * 1000 + idx,
+            name: values[0].trim(),
+            reps: parseInt(values[1]) || 0,
+            sets: parseInt(values[2]) || 1,
+            description: values[3].trim(),
+            days: values[4].split(',').map(d => d.trim()).filter(d => d),
+            bodyPart: values[5].trim() || 'Other'
+          };
+        }).filter(ex => ex !== null && ex.name);
+
+        if (imported.length > 0) {
+          saveExercises([...state.exercises, ...imported]);
+          return true;
+        }
+        return false;
       } catch (e) {
-        status.innerHTML = '❌ Error: ' + e.message;
-        status.style.background = '#7f1d1d';
+        console.error('Import error:', e);
+        return false;
       }
     }
+
+    // Render functions
+    function render() {
+      const app = document.getElementById('app');
+      app.innerHTML = renderApp();
+      attachEventListeners();
+    }
+
+    function renderApp() {
+      const { currentPage, showAddModal } = state;
+      
+      return `
+        <div class="min-h-screen bg-gray-900 text-white pb-24">
+          ${renderHeader()}
+          <div class="px-6">
+            ${showAddModal ? renderAddModal() : renderPage(currentPage)}
+          </div>
+          ${renderBottomNav()}
+        </div>
+      `;
+    }
+
+    function renderHeader() {
+      return `
+        <div class="p-6 flex items-center gap-4">
+          <div class="w-16 h-16 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg text-3xl">
+            ⏱️
+          </div>
+          <h1 class="text-3xl font-black" style="font-family: Impact, 'Arial Black', sans-serif; letter-spacing: -0.05em;">
+            <span class="text-white">PT</span><span class="text-orange-500">TRACKER</span>
+          </h1>
+        </div>
+      `;
+    }
+
+    function renderPage(page) {
+      switch(page) {
+        case 'today': return renderTodayPage();
+        case 'habits': return renderHabitsPage();
+        case 'stats': return renderStatsPage();
+        case 'settings': return renderSettingsPage();
+        default: return '';
+      }
+    }
+
+    function renderTodayPage() {
+      const todayExercises = getTodaysExercises();
+      const grouped = groupByBodyPart(todayExercises);
+      const completed = todayExercises.filter(ex => {
+        const sets = getCompletedSets(ex.id);
+        return sets === (ex.sets || 1);
+      }).length;
+      const completionRate = todayExercises.length > 0 
+        ? Math.round((completed / todayExercises.length) * 100)
+        : 0;
+
+      return `
+        <div class="mb-2 text-gray-400 text-sm">TODAY'S PLAN</div>
+        <div class="flex justify-between items-start mb-6">
+          <h1 class="text-3xl font-bold">${getToday()}</h1>
+          <div class="text-right">
+            <div class="text-3xl font-bold text-orange-500">${completed}/${todayExercises.length}</div>
+            <div class="text-sm text-gray-400">Completed</div>
+          </div>
+        </div>
+        <div class="h-2 bg-gray-800 rounded-full mb-8">
+          <div class="h-2 bg-orange-500 rounded-full transition-all" style="width: ${completionRate}%"></div>
+        </div>
+        ${todayExercises.length === 0 ? `
+          <div class="text-center py-16">
+            <div class="w-32 h-32 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">💤</div>
+            <h2 class="text-3xl font-bold mb-4">REST DAY?</h2>
+            <p class="text-gray-400 text-lg">No exercises scheduled for today.</p>
+          </div>
+        ` : Object.entries(grouped).map(([bodyPart, exs]) => `
+          <div class="pb-6 border-b border-white/20 last:border-b-0 last:pb-0 mb-4">
+            <h2 class="text-white font-bold text-lg mb-3 uppercase tracking-wide">${bodyPart}</h2>
+            <div class="space-y-4">
+              ${exs.map(ex => renderTodayExercise(ex)).join('')}
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function renderTodayExercise(ex) {
+      const completedSets = getCompletedSets(ex.id);
+      const totalSets = ex.sets || 1;
+      const progress = (completedSets / totalSets) * 100;
+      const isComplete = completedSets === totalSets;
+
+      return `
+        <div 
+          class="p-6 rounded-2xl transition-all cursor-pointer relative overflow-hidden ${
+            isComplete ? 'bg-orange-500/20 border-2 border-orange-500' : 'bg-gray-800 border-2 border-transparent'
+          }"
+          onclick="toggleComplete(${ex.id}, ${totalSets})"
+        >
+          ${totalSets > 1 ? `
+            <div class="absolute inset-0 pointer-events-none overflow-hidden">
+              <div class="h-full transition-all duration-300" style="
+                width: ${progress}%;
+                background: ${progress === 100 
+                  ? 'rgba(249, 115, 22, 0.3)' 
+                  : 'linear-gradient(to right, rgba(249, 115, 22, 0.3) 0%, rgba(249, 115, 22, 0.3) 85%, rgba(249, 115, 22, 0) 100%)'
+                };
+              "></div>
+            </div>
+          ` : ''}
+          <div class="relative z-10">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="text-xl font-bold">${ex.name}</h3>
+              <div class="text-orange-500 font-bold text-lg">${ex.reps} reps${totalSets > 1 ? ` × ${totalSets}` : ''}</div>
+            </div>
+            ${ex.description ? `<p class="text-gray-400 text-sm whitespace-pre-wrap">${ex.description}</p>` : ''}
+          </div>
+          ${totalSets > 1 ? `
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+              <div class="text-5xl font-bold text-orange-500">${completedSets}/${totalSets}</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function renderHabitsPage() {
+      const grouped = groupByBodyPart(state.exercises);
+      
+      return `
+        <div class="flex justify-between items-center mb-8">
+          <h1 class="text-3xl font-bold">ALL EXERCISES</h1>
+          <button onclick="openAddModal()" class="px-6 py-3 bg-gray-800 rounded-xl font-bold flex items-center gap-2">
+            + New
+          </button>
+        </div>
+        ${state.exercises.length === 0 ? `
+          <div class="text-center py-16 text-gray-400">
+            <p class="text-lg">No exercises yet. Add your first one!</p>
+          </div>
+        ` : Object.entries(grouped).map(([bodyPart, exs]) => `
+          <div class="pb-6 border-b border-white/20 last:border-b-0 last:pb-0 mb-4">
+            <h2 class="text-white font-bold text-lg mb-3 uppercase tracking-wide">${bodyPart}</h2>
+            <div class="space-y-4">
+              ${exs.map(ex => renderHabitCard(ex)).join('')}
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function renderHabitCard(ex) {
+      return `
+        <div class="p-4 bg-gray-800 rounded-2xl relative" data-exercise-id="${ex.id}">
+          <button onclick="deleteExercise(${ex.id})" class="absolute top-3 right-3 p-1 text-gray-400 hover:text-red-500 transition-colors">✕</button>
+          <div class="flex justify-between items-start mb-1 pr-7">
+            <h3 class="text-xl font-black uppercase tracking-wide" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); letter-spacing: 0.05em;">
+              ${ex.name}
+            </h3>
+          </div>
+          <div class="flex justify-center my-2">
+            <div class="text-orange-500 font-bold text-lg">${ex.reps} reps${ex.sets > 1 ? ` × ${ex.sets}` : ''}</div>
+          </div>
+          ${ex.description ? `<p class="text-gray-400 text-xs mb-2 whitespace-pre-wrap">${ex.description}</p>` : ''}
+          <div class="flex justify-between items-center">
+            <div class="flex gap-1">
+              ${ex.days.map(day => `<span class="px-2 py-0.5 bg-gray-700 rounded-lg text-xs">${day}</span>`).join('')}
+            </div>
+            <button onclick="editExercise(${ex.id})" class="text-orange-500 text-xs font-bold px-2 py-1 hover:bg-gray-700 rounded-lg transition-colors">
+              Edit
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStatsPage() {
+      const todayExercises = getTodaysExercises();
+      const totalRepsNeeded = todayExercises.reduce((sum, ex) => sum + (ex.reps * (ex.sets || 1)), 0);
+      const totalRepsCompleted = todayExercises.reduce((sum, ex) => {
+        return sum + (ex.reps * getCompletedSets(ex.id));
+      }, 0);
+      const completed = todayExercises.filter(ex => getCompletedSets(ex.id) === (ex.sets || 1)).length;
+      const completionRate = todayExercises.length > 0 ? Math.round((completed / todayExercises.length) * 100) : 0;
+
+      return `
+        <h1 class="text-3xl font-bold mb-8">YOUR PROGRESS</h1>
+        <div class="grid grid-cols-2 gap-4 mb-8">
+          <div class="p-6 bg-gray-800 rounded-2xl">
+            <div class="w-12 h-12 bg-orange-900/50 rounded-full flex items-center justify-center mb-4">🎯</div>
+            <div class="text-4xl font-bold mb-2">${totalRepsCompleted}/${totalRepsNeeded}</div>
+            <div class="text-gray-400 uppercase text-sm">Total Reps Today</div>
+          </div>
+          <div class="p-6 bg-gray-800 rounded-2xl">
+            <div class="w-12 h-12 bg-yellow-900/50 rounded-full flex items-center justify-center mb-4">🏆</div>
+            <div class="text-4xl font-bold mb-2">0</div>
+            <div class="text-gray-400 uppercase text-sm">Perfect Days</div>
+          </div>
+        </div>
+        <div class="p-6 bg-gray-800 rounded-2xl">
+          <h2 class="text-xl font-bold uppercase mb-6">Overview</h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center py-3 border-b border-gray-700">
+              <span class="text-gray-400">Active Exercises</span>
+              <span class="text-2xl font-bold">${state.exercises.length}</span>
+            </div>
+            <div class="flex justify-between items-center py-3">
+              <span class="text-gray-400">Completion Rate</span>
+              <span class="text-2xl font-bold text-orange-500">${completionRate}%</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSettingsPage() {
+      return `
+        <h1 class="text-3xl font-bold mb-8">SETTINGS</h1>
+        <div class="space-y-4">
+          <div class="p-4 bg-gray-700 rounded-2xl">
+            <p class="text-gray-400 text-sm">Version: <span class="text-white font-bold">${APP_VERSION}</span></p>
+            <p class="text-gray-400 text-xs mt-2">Storage: localStorage (GitHub Pages)</p>
+          </div>
+          <div class="p-6 bg-gray-800 rounded-2xl">
+            <h2 class="text-xl font-bold mb-4">Data Management</h2>
+            <button onclick="showExportModal()" class="w-full py-4 bg-orange-500 hover:bg-orange-600 rounded-xl font-bold text-lg mb-3">
+              Export Habits
+            </button>
+            <button onclick="showImportModal()" class="w-full py-4 bg-gray-700 hover:bg-gray-600 rounded-xl font-bold text-lg">
+              Import Habits
+            </button>
+            <p class="text-gray-400 text-sm mt-4">Export your habits to backup, then import into any version.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAddModal() {
+      const { newExercise, editingExercise } = state;
+      
+      return `
+        <div class="pb-4">
+          <div class="flex items-center mb-6">
+            <button onclick="closeAddModal()" class="p-2 -ml-2">✕</button>
+            <h2 class="text-2xl font-bold ml-2">${editingExercise ? 'Edit Exercise' : 'Add Exercise'}</h2>
+          </div>
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Exercise Name</label>
+              <input type="text" id="exerciseName" value="${newExercise.name}" 
+                class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white" 
+                placeholder="e.g., Push-ups">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Reps per Session</label>
+              <input type="number" id="exerciseReps" value="${newExercise.reps}" 
+                class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white" 
+                placeholder="e.g., 20">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Description (optional)</label>
+              <textarea id="exerciseDescription" 
+                class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white h-24"
+                placeholder="Add notes...">${newExercise.description}</textarea>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-3">Body Part Focus</label>
+              <div class="grid grid-cols-3 gap-2 mb-3">
+                ${bodyPartOptions.map(part => `
+                  <button onclick="selectBodyPart('${part}')" 
+                    class="py-2 px-3 rounded-xl font-bold text-sm ${
+                      newExercise.bodyPart === part ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'
+                    }">
+                    ${part}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-3">Scheduled Days</label>
+              <div class="grid grid-cols-7 gap-2">
+                ${daysOfWeek.map(day => `
+                  <button onclick="toggleDay('${day}')" 
+                    class="py-3 rounded-xl font-bold ${
+                      newExercise.days.includes(day) ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'
+                    }">
+                    ${day}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-3">Number of Sets</label>
+              <div class="grid grid-cols-5 gap-2">
+                ${[1,2,3,4,5,6,7,8,9,10].map(num => `
+                  <button onclick="selectSets(${num})" 
+                    class="py-3 rounded-xl font-bold ${
+                      newExercise.sets === num ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'
+                    }">
+                    ${num}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+            <button onclick="addExercise()" class="w-full py-4 bg-orange-500 rounded-xl font-bold text-lg">
+              ${editingExercise ? 'Update Exercise' : 'Add Exercise'}
+            </button>
+            ${editingExercise ? `
+              <button onclick="deleteExercise(${editingExercise.id}); closeAddModal();" 
+                class="w-full py-4 bg-red-600 hover:bg-red-700 rounded-xl font-bold text-lg">
+                Delete Exercise
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBottomNav() {
+      const { currentPage } = state;
+      const navItems = [
+        { id: 'today', icon: '📅', label: 'Today' },
+        { id: 'habits', icon: '🎯', label: 'Habits' },
+        { id: 'add', icon: '+', label: '' },
+        { id: 'stats', icon: '📊', label: 'Stats' },
+        { id: 'settings', icon: '⚙️', label: 'Settings' }
+      ];
+
+      return `
+        <div class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 px-4 py-3">
+          <div class="max-w-2xl mx-auto flex items-center justify-between">
+            ${navItems.map(item => {
+              if (item.id === 'add') {
+                return `
+                  <button onclick="openAddModal()" 
+                    class="w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center -mt-8 shadow-lg text-2xl"
+                    style="box-shadow: 0 0 25px rgba(249, 115, 22, 0.5), 0 10px 15px -3px rgb(0 0 0 / 0.1)">
+                    ${item.icon}
+                  </button>
+                `;
+              }
+              return `
+                <button onclick="setPage('${item.id}')" 
+                  class="flex flex-col items-center gap-1 flex-1 ${
+                    currentPage === item.id ? 'text-orange-500' : 'text-gray-400'
+                  }">
+                  <span class="text-2xl">${item.icon}</span>
+                  <span class="text-xs font-bold">${item.label}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Event handlers
+    function attachEventListeners() {
+      // Update input values
+      const nameInput = document.getElementById('exerciseName');
+      const repsInput = document.getElementById('exerciseReps');
+      const descInput = document.getElementById('exerciseDescription');
+      
+      if (nameInput) {
+        nameInput.oninput = (e) => {
+          state.newExercise.name = e.target.value;
+        };
+      }
+      if (repsInput) {
+        repsInput.oninput = (e) => {
+          state.newExercise.reps = e.target.value;
+        };
+      }
+      if (descInput) {
+        descInput.oninput = (e) => {
+          state.newExercise.description = e.target.value;
+        };
+      }
+    }
+
+    window.setPage = (page) => setState({ currentPage: page });
+    
+    window.openAddModal = () => {
+      setState({
+        showAddModal: true,
+        editingExercise: null,
+        newExercise: {
+          name: '',
+          reps: '',
+          description: '',
+          days: [],
+          sets: 1,
+          bodyPart: 'Upper Body'
+        }
+      });
+    };
+    
+    window.closeAddModal = () => setState({ 
+      showAddModal: false,
+      editingExercise: null
+    });
+    
+    window.toggleDay = (day) => {
+      const days = state.newExercise.days.includes(day)
+        ? state.newExercise.days.filter(d => d !== day)
+        : [...state.newExercise.days, day];
+      state.newExercise.days = days;
+      render();
+    };
+    
+    window.selectSets = (num) => {
+      state.newExercise.sets = num;
+      render();
+    };
+    
+    window.selectBodyPart = (part) => {
+      state.newExercise.bodyPart = part;
+      render();
+    };
+    
+    window.addExercise = addExercise;
+    
+    window.editExercise = (id) => {
+      const exercise = state.exercises.find(ex => ex.id === id);
+      if (exercise) {
+        setState({
+          editingExercise: exercise,
+          newExercise: {
+            name: exercise.name,
+            reps: exercise.reps.toString(),
+            description: exercise.description || '',
+            days: exercise.days,
+            sets: exercise.sets || 1,
+            bodyPart: exercise.bodyPart || 'Upper Body'
+          },
+          showAddModal: true
+        });
+      }
+    };
+    
+    window.deleteExercise = (id) => {
+      if (confirm('Delete this exercise?')) {
+        saveExercises(state.exercises.filter(ex => ex.id !== id));
+      }
+    };
+    
+    window.toggleComplete = toggleComplete;
+    
+    window.showExportModal = () => {
+      const data = exportData();
+      const modal = prompt('Copy this data to backup your habits:', data);
+    };
+    
+    window.showImportModal = () => {
+      const data = prompt('Paste your exported habits data:');
+      if (data && importData(data)) {
+alert('Import successful!');
+setState({ currentPage: 'habits' });
+} else if (data) {
+alert('Import failed. Please check the data format.');
+}
+};
+// Initial render
+render();
   </script>
 </body>
 </html>
+```
