@@ -25,7 +25,6 @@
       user-select: text;
     }
   </style>
-  <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-900 text-white">
   <div id="app">
@@ -676,9 +675,11 @@ function renderBottomNav() {
           if (item.id === 'add') {
             return `
               <button onclick="openAddModal()" 
-                class="w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center -mt-8 shadow-lg text-2xl"
+                class="w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center -mt-8 shadow-lg"
                 style="box-shadow: 0 0 25px rgba(249, 115, 22, 0.5), 0 10px 15px -3px rgb(0 0 0 / 0.1)">
-                ${item.icon}
+                <svg width="28" height="28" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12.5 5V20M5 12.5H20" stroke="white" stroke-width="1.2"/>
+                </svg>
               </button>
             `;
           }
@@ -813,12 +814,6 @@ alert('Import failed. Please check the data format.');
 // Initial render
 render();
   </script>
-
-  <button class="custom-fab" aria-label="Add Habit">
-  <svg width="30px" height="30px" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12.5 5V20M5 12.5H20" stroke="#121923" stroke-width="2"/>
-  </svg>
-</button>
   
 </body>
 </html>
