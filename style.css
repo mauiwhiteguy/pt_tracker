@@ -1,0 +1,38 @@
+.custom-fab {
+  /* 1. Positioning: Fixed stays in place while you scroll */
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  /* 2. Layering: 999 ensures it stays ON TOP of habit numbers */
+  z-index: 999;
+
+  /* 3. Aesthetics & Sizing */
+  width: 65px;
+  height: 65px;
+  background-color: #f0f0f0; /* Make this match your background */
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  /* 4. Emboss Flavor: Inner shadows create that 'pressed-in' look */
+  box-shadow: 
+    -4px -4px 10px rgba(255, 255, 255, 0.8), /* Top-left Highlight */
+    4px 4px 10px rgba(0, 0, 0, 0.1),         /* Bottom-right Shadow */
+    inset 2px 2px 4px rgba(255, 255, 255, 0.5), /* Inner Highlight */
+    inset -2px -2px 4px rgba(0, 0, 0, 0.05);    /* Inner Shadow */
+    
+  transition: all 0.2s ease;
+}
+
+/* Optional: Subtle press effect */
+.custom-fab:active {
+  transform: translateX(-50%) scale(0.95);
+  box-shadow: 
+    inset 4px 4px 10px rgba(0, 0, 0, 0.1),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.8);
+}
