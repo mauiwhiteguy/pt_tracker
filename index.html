@@ -348,7 +348,7 @@ function renderTodayExercise(ex) {
         ${ex.description ? `<p class="text-gray-400 text-sm whitespace-pre-wrap">${ex.description}</p>` : ''}
       </div>
       ${totalSets > 1 ? `
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div class="text-5xl font-black text-orange-500" 
                style="text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(249, 115, 22, 0.3);">
             ${completedSets}/${totalSets}
