@@ -76,7 +76,7 @@
       }
     };
 
-    const bodyPartOptions = ['Upper Body', 'Lower Body', 'Abs', 'Wrist', 'Knee', 'Neck'];
+    const bodyPartOptions = ['Upper Body', 'Lower Body', 'Abs', 'Wrist', 'Knee', 'Neck', 'Glutes'];
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     function setState(updates) {
@@ -544,6 +544,12 @@
                     ${part}
                   </button>
                 `).join('')}
+                <button onclick="selectCustomBodyPart()" 
+                  class="py-2 px-3 rounded-xl font-bold text-sm ${
+                    !bodyPartOptions.includes(newExercise.bodyPart) ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'
+                  }">
+                  ${!bodyPartOptions.includes(newExercise.bodyPart) ? newExercise.bodyPart : 'Custom'}
+                </button>
               </div>
             </div>
             <div>
@@ -745,6 +751,16 @@ function renderBottomNav() {
       state.newExercise.bodyPart = part;
       render();
     };
+    
+    window.selectCustomBodyPart = () => {
+      const custom = prompt('Enter custom body part:');
+      if (custom && custom.trim()) {
+        state.newExercise.bodyPart = custom.trim();
+        render();
+      }
+    };
+    
+    window.addExercise = addExercise;
     
     window.addExercise = addExercise;
     
