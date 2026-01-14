@@ -58,7 +58,7 @@
       }
     };
 
-    // Simple state management
+    // State management
     let state = {
       currentPage: 'today',
       exercises: storage.load('pt-exercises') || [],
@@ -196,13 +196,7 @@
         showAddModal: false,
         editingExercise: null,
         newExercise: {
-          name: '',
-          reps: '',
-          description: '',
-          days: [],
-          sets: 1,
-          bodyPart: 'Upper Body',
-          icon: ''
+          name: '', reps: '', description: '', days: [], sets: 1, bodyPart: 'Upper Body', icon: ''
         }
       });
     }
@@ -255,21 +249,22 @@
       const todayExercises = getTodaysExercises();
       const grouped = groupByBodyPart(todayExercises);
       const completed = todayExercises.filter(ex => getCompletedSets(ex.id) === (ex.sets || 1)).length;
-      const completionRate = todayExercises.length > 0 ? Math.round((completed / todayExercises.length) * 100) : 0;
+      const total = todayExercises.length;
+      const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
       return `
         <div class="mb-2 text-gray-400 text-sm">TODAY'S PLAN</div>
         <div class="flex justify-between items-start mb-6">
           <h1 class="text-3xl font-bold">${getToday()}</h1>
           <div class="text-right">
-            <div class="text-3xl font-bold text-orange-500">${completed}/${todayExercises.length}</div>
-            <div class="text-sm text-gray-400">Completed</div>
+            <div class="text-3xl font-bold text-orange-500">${completed}/${total}</div>
+            <div class="text-sm text-gray-400 font-bold uppercase tracking-wider">Completed</div>
           </div>
         </div>
         <div class="h-2 bg-gray-800 rounded-full mb-8">
           <div class="h-2 bg-orange-500 rounded-full transition-all" style="width: ${completionRate}%"></div>
         </div>
-        ${todayExercises.length === 0 ? `
+        ${total === 0 ? `
           <div class="text-center py-16">
             <div class="w-32 h-32 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">💤</div>
             <h2 class="text-3xl font-bold mb-4">REST DAY?</h2>
@@ -301,9 +296,15 @@
       const isComplete = completedSets === totalSets;
 
       return `
-        <div class="p-6 rounded-2xl transition-all cursor-pointer relative overflow-hidden ${isComplete ? 'bg-orange-500/20 border-2 border-orange-500' : 'bg-gray-800 border-2 border-transparent'}" onclick="toggleComplete(${ex.id}, ${totalSets})">
+        <div class="p-6 rounded-2xl transition-all cursor-pointer relative overflow-hidden ${
+          isComplete ? 'bg-orange-500/20 border-2 border-orange-500' : 'bg-gray-800 border-2 border-transparent'
+        }" onclick="toggleComplete(${ex.id}, ${totalSets})">
           ${ex.icon ? `<div class="absolute inset-0 flex items-center justify-center opacity-20 text-orange-500 pointer-events-none"><div class="w-40 h-40">${ex.icon}</div></div>` : ''}
-          ${totalSets > 1 ? `<div class="absolute inset-0 pointer-events-none overflow-hidden"><div class="h-full transition-all duration-300" style="width: ${progress}%; background: rgba(249, 115, 22, 0.3);"></div></div>` : ''}
+          ${totalSets > 1 ? `
+            <div class="absolute inset-0 pointer-events-none overflow-hidden">
+              <div class="h-full transition-all duration-300" style="width: ${progress}%; background: rgba(249, 115, 22, 0.3);"></div>
+            </div>
+          ` : ''}
           <div class="relative z-10">
             <div class="flex justify-between items-start mb-2">
               <h3 class="text-xl font-bold">${ex.name}</h3>
@@ -311,7 +312,11 @@
             </div>
             ${ex.description ? `<p class="text-gray-400 text-sm whitespace-pre-wrap">${ex.description}</p>` : ''}
           </div>
-          ${totalSets > 1 ? `<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20"><div class="text-5xl font-black text-orange-500" style="text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);">${completedSets}/${totalSets}</div></div>` : ''}
+          ${totalSets > 1 ? `
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+              <div class="text-5xl font-black text-orange-500" style="text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);">${completedSets}/${totalSets}</div>
+            </div>
+          ` : ''}
         </div>
       `;
     }
@@ -320,13 +325,13 @@
       const grouped = groupByBodyPart(state.exercises);
       return `
         <div class="flex justify-between items-center mb-8">
-          <h1 class="text-3xl font-bold">ALL EXERCISES</h1>
-          <button onclick="openAddModal()" class="px-6 py-3 bg-gray-800 rounded-xl font-bold">+ New</button>
+          <h1 class="text-3xl font-bold uppercase tracking-tight">All Exercises</h1>
+          <button onclick="openAddModal()" class="px-6 py-3 bg-gray-800 rounded-xl font-bold border border-white/5 active:bg-gray-700">+ New</button>
         </div>
         ${state.exercises.length === 0 ? `<p class="text-center text-gray-400 py-16">No exercises yet.</p>` : 
         Object.entries(grouped).map(([bodyPart, exs]) => `
-          <div class="mb-4">
-            <h2 class="text-white font-bold text-lg uppercase mb-3">${bodyPart}</h2>
+          <div class="mb-6">
+            <h2 class="text-white font-bold text-sm uppercase tracking-widest mb-4 opacity-50">${bodyPart}</h2>
             <div class="space-y-4">${exs.map(ex => renderHabitCard(ex)).join('')}</div>
           </div>
         `).join('')}
@@ -336,14 +341,15 @@
     function renderHabitCard(ex) {
       return `
         <div class="p-4 bg-gray-800 rounded-2xl relative overflow-hidden group">
-          ${ex.icon ? `<div class="absolute -top-4 -right-4 w-32 h-32 text-orange-500 opacity-10 pointer-events-none">${ex.icon}</div>` : ''}
-          <button onclick="deleteExercise(${ex.id})" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 z-20">✕</button>
+          ${ex.icon ? `<div class="absolute -bottom-4 -right-4 w-32 h-32 text-orange-500 opacity-10 pointer-events-none bg-transparent">${ex.icon}</div>` : ''}
+          <button onclick="deleteExercise(${ex.id})" class="absolute top-3 right-3 p-1 text-gray-400 hover:text-red-500 z-20">✕</button>
           <div class="relative z-10">
-            <h3 class="text-xl font-black uppercase ${ex.shelved ? 'text-cyan-400' : 'text-white'}">${ex.name}</h3>
-            <div class="text-orange-500 font-bold my-2 text-center">${ex.reps} reps${ex.sets > 1 ? ` × ${ex.sets}` : ''}</div>
-            <div class="flex justify-between items-center mt-2">
+            <h3 class="text-xl font-black uppercase ${ex.shelved ? 'text-cyan-400' : 'text-white'}" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">${ex.name}</h3>
+            <div class="flex justify-center my-3"><div class="text-orange-500 font-bold text-lg">${ex.reps} reps${ex.sets > 1 ? ` × ${ex.sets}` : ''}</div></div>
+            ${ex.description ? `<p class="text-gray-400 text-xs mb-3 whitespace-pre-wrap">${ex.description}</p>` : ''}
+            <div class="flex justify-between items-center">
               <div class="flex gap-1">${ex.days.map(day => `<span class="px-2 py-0.5 bg-gray-700 rounded-lg text-xs">${day}</span>`).join('')}</div>
-              <button onclick="editExercise(${ex.id})" class="text-orange-500 text-xs font-bold">Edit</button>
+              <button onclick="editExercise(${ex.id})" class="text-orange-500 text-xs font-bold px-2 py-1 hover:bg-gray-700 rounded-lg">Edit</button>
             </div>
           </div>
         </div>
@@ -357,25 +363,32 @@
       const completionRate = totalPossible > 0 ? Math.round((fullyCompleted / totalPossible) * 100) : 0;
 
       return `
-        <h1 class="text-3xl font-bold mb-8 uppercase">Your Progress</h1>
+        <h1 class="text-3xl font-bold mb-8 uppercase tracking-tight">Your Progress</h1>
         <div class="grid grid-cols-2 gap-4 mb-8">
-          <div class="p-6 bg-gray-800 rounded-2xl border border-white/5 text-center">
+          <div class="p-6 bg-gray-800 rounded-2xl border border-white/5">
+            <div class="w-12 h-12 bg-orange-900/50 rounded-full flex items-center justify-center mb-4">
+              <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7 stroke-orange-500"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
             <div class="text-3xl font-black text-white">${fullyCompleted}/${totalPossible}</div>
-            <div class="text-xs text-gray-400 font-bold uppercase">Completed Today</div>
+            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Completed Today</div>
           </div>
-          <div class="p-6 bg-gray-800 rounded-2xl border border-white/5 text-center">
+          <div class="p-6 bg-gray-800 rounded-2xl border border-white/5">
+            <div class="w-12 h-12 bg-yellow-900/50 rounded-full flex items-center justify-center mb-4 text-xl">🏆</div>
             <div class="text-3xl font-black text-white">0</div>
-            <div class="text-xs text-gray-400 font-bold uppercase">Perfect Days</div>
+            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Perfect Days</div>
           </div>
         </div>
         <div class="p-6 bg-gray-800 rounded-3xl border border-white/5">
-          <div class="flex justify-between py-3 border-b border-gray-700/50">
-            <span class="text-gray-400">Active Exercises</span>
-            <span class="font-black">${state.exercises.filter(ex => !ex.shelved).length} of ${state.exercises.length}</span>
-          </div>
-          <div class="flex justify-between py-3">
-            <span class="text-gray-400">Completion Rate</span>
-            <span class="font-black text-orange-500">${completionRate}%</span>
+          <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Overview</h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center py-3 border-b border-gray-700/50">
+              <span class="text-gray-400 font-medium">Active Exercises</span>
+              <span class="text-2xl font-black">${state.exercises.filter(ex => !ex.shelved).length} of ${state.exercises.length}</span>
+            </div>
+            <div class="flex justify-between items-center py-3">
+              <span class="text-gray-400 font-medium">Completion Rate</span>
+              <span class="text-2xl font-black text-orange-500">${completionRate}%</span>
+            </div>
           </div>
         </div>
       `;
@@ -384,11 +397,13 @@
     function renderSettingsPage() {
       return `
         <div class="p-6 space-y-6">
-          <h2 class="text-2xl font-bold text-white">Settings</h2>
-          <button onclick="exportDataAsFile()" class="w-full py-4 bg-gray-700 rounded-xl font-medium">Download Backup</button>
-          <label class="w-full py-4 bg-orange-500/10 border border-orange-500 text-orange-500 rounded-xl font-bold flex items-center justify-center cursor-pointer">
-            Import JSON <input type="file" accept=".json" onchange="handleImport(event)" class="hidden">
-          </label>
+          <h2 class="text-2xl font-bold text-white uppercase tracking-tight">Settings</h2>
+          <div class="space-y-4">
+            <button onclick="exportDataAsFile()" class="w-full py-4 bg-gray-800 rounded-xl font-bold border border-white/5">Backup (Download JSON)</button>
+            <label class="w-full py-4 bg-orange-500/10 border border-orange-500 text-orange-500 rounded-xl font-bold flex items-center justify-center cursor-pointer">
+              Restore (Import JSON) <input type="file" accept=".json" onchange="handleImport(event)" class="hidden">
+            </label>
+          </div>
         </div>
       `;
     }
@@ -396,18 +411,47 @@
     function renderAddModal() {
       const { newExercise, editingExercise } = state;
       return `
-        <div class="pb-4 space-y-6">
-          <div class="flex items-center"><button onclick="closeAddModal()" class="p-2">✕</button><h2 class="text-2xl font-bold ml-2">Exercise</h2></div>
-          <input type="text" id="exerciseName" value="${newExercise.name}" class="w-full bg-gray-700 rounded-xl px-4 py-3" placeholder="Name">
-          <input type="number" id="exerciseReps" value="${newExercise.reps}" class="w-full bg-gray-700 rounded-xl px-4 py-3" placeholder="Reps">
-          <textarea id="exerciseIcon" class="w-full bg-gray-700 rounded-xl px-4 py-3 font-mono text-xs h-20" placeholder="SVG Code">${newExercise.icon || ''}</textarea>
-          <div class="grid grid-cols-7 gap-1">
-            ${daysOfWeek.map(day => `<button onclick="toggleDay('${day}')" class="py-2 rounded-lg font-bold ${newExercise.days.includes(day) ? 'bg-orange-500' : 'bg-gray-700 text-gray-400'}">${day}</button>`).join('')}
+        <div class="pb-10 space-y-6">
+          <div class="flex items-center justify-between"><h2 class="text-2xl font-bold uppercase">${editingExercise ? 'Edit' : 'New'} Exercise</h2><button onclick="closeAddModal()" class="p-2 text-gray-400">✕</button></div>
+          <div><label class="block text-sm text-gray-400 mb-2">Name</label><input type="text" id="exerciseName" value="${newExercise.name}" class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white"></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm text-gray-400 mb-2">Reps</label><input type="number" id="exerciseReps" value="${newExercise.reps}" class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white"></div>
+            <div><label class="block text-sm text-gray-400 mb-2">Category</label><button onclick="selectCustomBodyPart()" class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white text-left overflow-hidden whitespace-nowrap">${newExercise.bodyPart}</button></div>
           </div>
-          <div class="flex gap-2">
-            ${[1,2,3,4,5].map(n => `<button onclick="selectSets(${n})" class="flex-1 py-2 rounded-lg ${newExercise.sets === n ? 'bg-orange-500' : 'bg-gray-700'}">${n} Sets</button>`).join('')}
+          <div><label class="block text-sm text-gray-400 mb-2">Description (Optional)</label><textarea id="exerciseDescription" class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white h-20">${newExercise.description || ''}</textarea></div>
+          <div><label class="block text-sm text-gray-400 mb-2">Icon SVG Code</label><textarea id="exerciseIcon" class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white font-mono text-xs h-20">${newExercise.icon || ''}</textarea></div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Schedule</label>
+            <div class="grid grid-cols-7 gap-1">${daysOfWeek.map(day => `<button onclick="toggleDay('${day}')" class="py-3 rounded-lg font-bold text-xs ${newExercise.days.includes(day) ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'}">${day}</button>`).join('')}</div>
           </div>
-          <button onclick="addExercise()" class="w-full py-4 bg-orange-500 rounded-xl font-bold">${editingExercise ? 'Update' : 'Add'}</button>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Sets</label>
+            <div class="flex gap-2">${[1,2,3,4,5].map(n => `<button onclick="selectSets(${n})" class="flex-1 py-3 rounded-xl font-bold ${newExercise.sets === n ? 'bg-orange-500' : 'bg-gray-700 text-gray-400'}">${n}</button>`).join('')}</div>
+          </div>
+          <div class="flex gap-4">
+             <button onclick="toggleShelve()" class="flex-1 py-4 rounded-xl font-bold ${newExercise.shelved ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-400'}">${newExercise.shelved ? 'Shelved' : 'Active'}</button>
+             <button onclick="addExercise()" class="flex-[2] py-4 bg-orange-500 rounded-xl font-bold text-white shadow-lg shadow-orange-500/20">${editingExercise ? 'Update' : 'Create'}</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBottomNav() {
+      const { currentPage } = state;
+      const navItems = [
+        { id: 'today', label: 'Today', icon: '<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>' },
+        { id: 'habits', label: 'Habits', icon: '<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>' },
+        { id: 'stats', label: 'Stats', icon: '<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>' },
+        { id: 'settings', label: 'Settings', icon: '<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>' }
+      ];
+      return `
+        <div class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-white/5 flex justify-around p-3 z-50">
+          ${navItems.map(item => `
+            <button onclick="setPage('${item.id}')" class="flex flex-col items-center gap-1 ${state.currentPage === item.id ? 'text-orange-500' : 'text-gray-500'}">
+              <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6 stroke-current" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+              <span class="text-[10px] font-bold uppercase tracking-widest">${item.label}</span>
+            </button>
+          `).join('')}
         </div>
       `;
     }
@@ -415,9 +459,11 @@
     function attachEventListeners() {
       const name = document.getElementById('exerciseName');
       const reps = document.getElementById('exerciseReps');
+      const desc = document.getElementById('exerciseDescription');
       const icon = document.getElementById('exerciseIcon');
       if (name) name.oninput = (e) => state.newExercise.name = e.target.value;
       if (reps) reps.oninput = (e) => state.newExercise.reps = e.target.value;
+      if (desc) desc.oninput = (e) => state.newExercise.description = e.target.value;
       if (icon) icon.oninput = (e) => state.newExercise.icon = e.target.value;
     }
 
@@ -427,24 +473,13 @@
     window.closeAddModal = () => setState({ showAddModal: false });
     window.toggleDay = (d) => { state.newExercise.days = state.newExercise.days.includes(d) ? state.newExercise.days.filter(x => x!==d) : [...state.newExercise.days, d]; render(); };
     window.selectSets = (n) => { state.newExercise.sets = n; render(); };
-    window.selectBodyPart = (p) => { state.newExercise.bodyPart = p; render(); };
+    window.toggleShelve = () => { state.newExercise.shelved = !state.newExercise.shelved; render(); };
+    window.selectCustomBodyPart = () => { const custom = prompt('Enter custom body part:'); if (custom && custom.trim()) { state.newExercise.bodyPart = custom.trim(); render(); } };
     window.editExercise = (id) => { const ex = state.exercises.find(x => x.id === id); if(ex) setState({ editingExercise: ex, newExercise: { ...ex, reps: ex.reps.toString() }, showAddModal: true }); };
     window.deleteExercise = (id) => { if(confirm('Delete?')) saveExercises(state.exercises.filter(x => x.id !== id)); };
     window.toggleComplete = toggleComplete;
-    window.exportDataAsFile = () => { const data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state)); const a = document.createElement('a'); a.href = data; a.download = 'backup.json'; a.click(); };
-    window.handleImport = (e) => { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); state = {...state, ...d}; storage.save('pt-exercises', state.exercises); storage.save('pt-completions', state.completions); render(); }; r.readAsText(f); };
-
-    function renderBottomNav() {
-      const { currentPage } = state;
-      return `
-        <div class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around p-3">
-          <button onclick="setPage('today')" class="${currentPage === 'today' ? 'text-orange-500' : 'text-gray-400'}">Today</button>
-          <button onclick="setPage('habits')" class="${currentPage === 'habits' ? 'text-orange-500' : 'text-gray-400'}">Habits</button>
-          <button onclick="setPage('stats')" class="${currentPage === 'stats' ? 'text-orange-500' : 'text-gray-400'}">Stats</button>
-          <button onclick="setPage('settings')" class="${currentPage === 'settings' ? 'text-orange-500' : 'text-gray-400'}">Settings</button>
-        </div>
-      `;
-    }
+    window.exportDataAsFile = () => { const data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state)); const a = document.createElement('a'); a.href = data; a.download = 'pt_tracker_backup.json'; a.click(); };
+    window.handleImport = (e) => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); state = {...state, ...d}; storage.save('pt-exercises', state.exercises); storage.save('pt-completions', state.completions); render(); alert('Import successful!'); } catch(err) { alert('Import failed.'); } }; r.readAsText(f); };
 
     checkAndResetDailyData();
     render();
