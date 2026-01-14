@@ -74,6 +74,7 @@
         days: [],
         sets: 1,
         bodyPart: 'Upper Body'
+        icon: '' // Add this line
       }
     };
 
@@ -544,6 +545,12 @@ function renderTodayExercise(ex) {
                 placeholder="Add notes...">${newExercise.description}</textarea>
             </div>
             <div>
+              <label class="block text-sm text-gray-400 mb-2">Icon SVG Code (optional)</label>
+              <textarea id="exerciseIcon" 
+               class="w-full bg-gray-700 rounded-xl px-4 py-3 text-white h-20 font-mono text-xs"
+               placeholder='Paste <svg>...</svg> here'>${newExercise.icon || ''}</textarea>
+            </div>
+            <div>
               <label class="block text-sm text-gray-400 mb-3">Body Part Focus</label>
               <div class="grid grid-cols-3 gap-2 mb-3">
                 ${bodyPartOptions.map(part => `
@@ -718,6 +725,7 @@ function renderBottomNav() {
       const nameInput = document.getElementById('exerciseName');
       const repsInput = document.getElementById('exerciseReps');
       const descInput = document.getElementById('exerciseDescription');
+      const iconInput = document.getElementById('exerciseIcon');
       
       if (nameInput) {
         nameInput.oninput = (e) => {
@@ -801,6 +809,12 @@ function renderBottomNav() {
   }
 };
     
+    if (iconInput) {
+    iconInput.oninput = (e) => {
+      state.newExercise.icon = e.target.value;
+    };
+  }
+    
     window.addExercise = addExercise;
     
     window.editExercise = (id) => {
@@ -815,6 +829,7 @@ function renderBottomNav() {
             days: exercise.days,
             sets: exercise.sets || 1,
             bodyPart: exercise.bodyPart || 'Upper Body'
+            icon: exercise.icon || '' // 
           },
           showAddModal: true
         });
