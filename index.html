@@ -317,18 +317,26 @@
     }
 
 function renderTodayExercise(ex) {
-      const completedSets = getCompletedSets(ex.id);
-      const totalSets = ex.sets || 1;
-      const progress = (completedSets / totalSets) * 100;
-      const isComplete = completedSets === totalSets;
+  const completedSets = getCompletedSets(ex.id);
+  const totalSets = ex.sets || 1;
+  const progress = (completedSets / totalSets) * 100;
+  const isComplete = completedSets === totalSets;
 
-      return `
+  return `
     <div 
       class="p-6 rounded-2xl transition-all cursor-pointer relative overflow-hidden ${
         isComplete ? 'bg-orange-500/20 border-2 border-orange-500' : 'bg-gray-800 border-2 border-transparent'
       }"
       onclick="toggleComplete(${ex.id}, ${totalSets})"
     >
+      ${ex.icon ? `
+        <div class="absolute inset-0 flex items-center justify-center opacity-10 text-orange-500 pointer-events-none">
+          <div class="w-32 h-32">
+            ${ex.icon}
+          </div>
+        </div>
+      ` : ''}
+
       ${totalSets > 1 ? `
         <div class="absolute inset-0 pointer-events-none overflow-hidden">
           <div class="h-full transition-all duration-300" style="
@@ -340,6 +348,7 @@ function renderTodayExercise(ex) {
           "></div>
         </div>
       ` : ''}
+
       <div class="relative z-10">
         <div class="flex justify-between items-start mb-2">
           <h3 class="text-xl font-bold">${ex.name}</h3>
@@ -347,6 +356,7 @@ function renderTodayExercise(ex) {
         </div>
         ${ex.description ? `<p class="text-gray-400 text-sm whitespace-pre-wrap">${ex.description}</p>` : ''}
       </div>
+
       ${totalSets > 1 ? `
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div class="text-5xl font-black text-orange-500" 
