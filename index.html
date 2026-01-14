@@ -73,7 +73,7 @@
         description: '',
         days: [],
         sets: 1,
-        bodyPart: 'Upper Body'
+        bodyPart: 'Upper Body',
         icon: '' // Add this line
       }
     };
@@ -742,6 +742,11 @@ function renderBottomNav() {
           state.newExercise.description = e.target.value;
         };
       }
+      if (iconInput) {
+        iconInput.oninput = (e) => {
+          state.newExercise.icon = e.target.value;
+        };
+      }
     }
 
     window.toggleCategory = (category) => {
@@ -809,12 +814,6 @@ function renderBottomNav() {
   }
 };
     
-    if (iconInput) {
-    iconInput.oninput = (e) => {
-      state.newExercise.icon = e.target.value;
-    };
-  }
-    
     window.addExercise = addExercise;
     
     window.editExercise = (id) => {
@@ -828,7 +827,7 @@ function renderBottomNav() {
             description: exercise.description || '',
             days: exercise.days,
             sets: exercise.sets || 1,
-            bodyPart: exercise.bodyPart || 'Upper Body'
+            bodyPart: exercise.bodyPart || 'Upper Body',
             icon: exercise.icon || '' // 
           },
           showAddModal: true
