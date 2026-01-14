@@ -464,7 +464,7 @@ function renderTodayExercise(ex) {
       <div class="space-y-4">
         <div class="flex justify-between items-center py-3 border-b border-gray-700/50">
           <span class="text-gray-400 font-medium">Active Exercises</span>
-          <span class="text-2xl font-black">${state.exercises.length}</span>
+          <span class="text-2xl font-black">${state.exercises.filter(ex => !ex.shelved).length} of ${state.exercises.length}</span>
         </div>
         <div class="flex justify-between items-center py-3">
           <span class="text-gray-400 font-medium">Completion Rate</span>
