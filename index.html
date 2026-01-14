@@ -478,9 +478,9 @@ function renderTodayExercise(ex) {
               <span class="text-2xl font-black text-white">${activeExercises} <span class="text-sm text-gray-500 font-normal">of ${totalExercises}</span></span>
             </div>
             <div class="flex justify-between items-center py-3">
-              <span class="text-gray-400 font-medium">Daily Goal Status</span>
-              <span class="text-xl font-bold ${completionRate === 100 ? 'text-orange-500' : 'text-gray-300'}">
-                ${completionRate === 100 ? 'GOAL REACHED' : 'IN PROGRESS'}
+              <span class="text-gray-400 font-medium">Today's Progress</span>
+              <span class="text-xl font-bold text-orange-500">
+                ${fullyCompleted} OF ${totalToday} DONE
               </span>
             </div>
           </div>
