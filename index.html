@@ -308,10 +308,11 @@
           </div>
         ` : Object.entries(grouped).map(([bodyPart, exs]) => {
           const isCollapsed = state.collapsedCategories[bodyPart];
+          const allCompleted = exs.every(ex => getCompletedSets(ex.id) === (ex.sets || 1));
           return `
           <div class="pb-6 border-b border-white/20 last:border-b-0 last:pb-0 mb-4">
             <button onclick="toggleCategory('${bodyPart}')" class="w-full flex items-center justify-between mb-3 text-left">
-              <h2 class="text-white font-bold text-lg uppercase tracking-wide">${bodyPart}</h2>
+              <h2 class="font-bold text-lg uppercase tracking-wide ${allCompleted ? 'text-orange-500' : 'text-white'}">${bodyPart}</h2>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" 
                    class="transform transition-transform ${isCollapsed ? '' : 'rotate-180'}">
                 <path d="M6 9L12 15L18 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -383,14 +384,23 @@ function renderTodayExercise(ex) {
           <div class="text-center py-16 text-gray-400">
             <p class="text-lg">No exercises yet. Add your first one!</p>
           </div>
-        ` : Object.entries(grouped).map(([bodyPart, exs]) => `
+        ` : Object.entries(grouped).map(([bodyPart, exs]) => {
+          const isCollapsed = state.collapsedCategories[`habits-${bodyPart}`];
+          return `
           <div class="pb-6 border-b border-white/20 last:border-b-0 last:pb-0 mb-4">
-            <h2 class="text-white font-bold text-lg mb-3 uppercase tracking-wide">${bodyPart}</h2>
-            <div class="space-y-4">
+            <button onclick="toggleCategory('habits-${bodyPart}')" class="w-full flex items-center justify-between mb-3 text-left">
+              <h2 class="text-white font-bold text-lg uppercase tracking-wide">${bodyPart}</h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" 
+                   class="transform transition-transform ${isCollapsed ? '' : 'rotate-180'}">
+                <path d="M6 9L12 15L18 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="space-y-4 ${isCollapsed ? 'hidden' : ''}">
               ${exs.map(ex => renderHabitCard(ex)).join('')}
             </div>
           </div>
-        `).join('')}
+        `;
+        }).join('')}
       `;
     }
 
