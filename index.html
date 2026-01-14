@@ -147,7 +147,7 @@
     function addExercise() {
       const { newExercise, editingExercise, exercises } = state;
       
-      if (!newExercise.name || !newExercise.reps || newExercise.days.length === 0) {
+      if (!newExercise.name || !newExercise.reps || (newExercise.days.length === 0 && !newExercise.shelved)) {
         alert('Please fill in all required fields');
         return;
       }
@@ -155,7 +155,7 @@
       if (editingExercise) {
         const updated = exercises.map(ex =>
           ex.id === editingExercise.id
-            ? { ...newExercise, id: editingExercise.id, reps: parseInt(newExercise.reps) }
+            ? { ...newExercise, id: editingExercise.id, reps: parseInt(newExercise.reps), shelved: newExercise.shelved || false }
             : ex
         );
         saveExercises(updated);
@@ -163,7 +163,8 @@
         const exercise = {
           id: Date.now(),
           ...newExercise,
-          reps: parseInt(newExercise.reps)
+          reps: parseInt(newExercise.reps),
+          shelved: newExercise.shelved || false
         };
         saveExercises([...exercises, exercise]);
       }
@@ -409,7 +410,7 @@ function renderTodayExercise(ex) {
         <div class="p-4 bg-gray-800 rounded-2xl relative" data-exercise-id="${ex.id}">
           <button onclick="deleteExercise(${ex.id})" class="absolute top-3 right-3 p-1 text-gray-400 hover:text-red-500 transition-colors">✕</button>
           <div class="flex justify-between items-start mb-1 pr-7">
-            <h3 class="text-xl font-black uppercase tracking-wide" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); letter-spacing: 0.05em;">
+            <h3 class="text-xl font-black uppercase tracking-wide ${ex.shelved ? 'text-cyan-400' : 'text-white'}" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); letter-spacing: 0.05em;">
               ${ex.name}
             </h3>
           </div>
@@ -577,16 +578,24 @@ function renderTodayExercise(ex) {
             </div>
             <div>
               <label class="block text-sm text-gray-400 mb-3">Scheduled Days</label>
-              <div class="grid grid-cols-7 gap-2">
-                ${daysOfWeek.map(day => `
-                  <button onclick="toggleDay('${day}')" 
-                    class="py-3 rounded-xl font-bold ${
-                      newExercise.days.includes(day) ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'
-                    }">
-                    ${day}
-                  </button>
-                `).join('')}
-              </div>
+              <button onclick="toggleShelved()" 
+                class="w-full py-3 rounded-xl font-bold mb-3 ${
+                  newExercise.shelved ? 'bg-cyan-400 text-gray-900' : 'bg-gray-700 text-gray-400'
+                }">
+                ${newExercise.shelved ? '❄️ SHELVED' : 'SHELVE THIS EXERCISE'}
+              </button>
+              ${!newExercise.shelved ? `
+                <div class="grid grid-cols-7 gap-2">
+                  ${daysOfWeek.map(day => `
+                    <button onclick="toggleDay('${day}')" 
+                      class="py-3 rounded-xl font-bold ${
+                        newExercise.days.includes(day) ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-400'
+                      }">
+                      ${day}
+                    </button>
+                  `).join('')}
+                </div>
+              ` : '<p class="text-gray-400 text-sm text-center">This exercise is shelved and not scheduled for any days</p>'}
             </div>
             <div>
               <label class="block text-sm text-gray-400 mb-3">Number of Sets</label>
@@ -749,6 +758,14 @@ function renderBottomNav() {
       render();
     };
 
+    window.toggleShelved = () => {
+      state.newExercise.shelved = !state.newExercise.shelved;
+      if (state.newExercise.shelved) {
+        state.newExercise.days = [];
+      }
+      render();
+    };
+    
     window.setPage = (page) => setState({ currentPage: page });
     
     window.openAddModal = () => {
@@ -761,7 +778,8 @@ function renderBottomNav() {
           description: '',
           days: [],
           sets: 1,
-          bodyPart: 'Upper Body'
+          bodyPart: 'Upper Body',
+          shelved: false
         }
       });
     };
