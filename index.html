@@ -443,34 +443,45 @@ function renderTodayExercise(ex) {
    function renderStatsPage() {
       const todayExercises = getTodaysExercises();
       const fullyCompleted = todayExercises.filter(ex => getCompletedSets(ex.id) === (ex.sets || 1)).length;
-      const totalPossible = todayExercises.length;
-      const completionRate = totalPossible > 0 ? Math.round((fullyCompleted / totalPossible) * 100) : 0;
+      const totalToday = todayExercises.length;
+      const completionRate = totalToday > 0 ? Math.round((fullyCompleted / totalToday) * 100) : 0;
+      
+      const activeExercises = state.exercises.filter(ex => !ex.shelved).length;
+      const totalExercises = state.exercises.length;
 
       return `
-        <h1 class="text-3xl font-bold mb-8 uppercase tracking-tight text-white">Progress Overview</h1>
+        <h1 class="text-3xl font-bold mb-8 uppercase tracking-tight">Your Progress</h1>
         
-        <div class="grid grid-cols-1 gap-4 mb-8">
-          <div class="p-8 bg-gray-800 rounded-3xl border border-white/10 relative overflow-hidden">
-            <div class="relative z-10">
-              <div class="text-sm font-bold text-orange-500 uppercase tracking-widest mb-1">Daily Goal</div>
-              <div class="text-6xl font-black text-white mb-2">${completionRate}%</div>
-              <div class="text-gray-400 font-medium">${fullyCompleted} of ${totalPossible} exercises finished</div>
-            </div>
-            <div class="absolute -right-4 -bottom-4 text-orange-500 opacity-10">
-              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        <div class="grid grid-cols-2 gap-4 mb-8">
+          <div class="p-6 bg-gray-800 rounded-2xl border border-white/5">
+            <div class="w-12 h-12 bg-orange-900/50 rounded-full flex items-center justify-center mb-4">
+              <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7 stroke-orange-500" stroke-width="2">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round"/>
               </svg>
             </div>
+            <div class="text-3xl font-black text-white">${fullyCompleted}/${totalToday}</div>
+            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Completed Today</div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div class="p-6 bg-gray-800 rounded-2xl border border-white/5">
-              <div class="text-3xl font-black text-white">${state.exercises.filter(ex => !ex.shelved).length}</div>
-              <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Active Habits</div>
+          <div class="p-6 bg-gray-800 rounded-2xl border border-white/5">
+            <div class="w-12 h-12 bg-green-900/50 rounded-full flex items-center justify-center mb-4 text-xl">📈</div>
+            <div class="text-3xl font-black text-white">${completionRate}%</div>
+            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Success Rate</div>
+          </div>
+        </div>
+
+        <div class="p-6 bg-gray-800 rounded-3xl border border-white/5">
+          <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Overview</h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center py-3 border-b border-gray-700/50">
+              <span class="text-gray-400 font-medium">Active Exercises</span>
+              <span class="text-2xl font-black text-white">${activeExercises} <span class="text-sm text-gray-500 font-normal">of ${totalExercises}</span></span>
             </div>
-            <div class="p-6 bg-gray-800 rounded-2xl border border-white/5">
-              <div class="text-3xl font-black text-cyan-400">${state.exercises.filter(ex => ex.shelved).length}</div>
-              <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Shelved</div>
+            <div class="flex justify-between items-center py-3">
+              <span class="text-gray-400 font-medium">Daily Goal Status</span>
+              <span class="text-xl font-bold ${completionRate === 100 ? 'text-orange-500' : 'text-gray-300'}">
+                ${completionRate === 100 ? 'GOAL REACHED' : 'IN PROGRESS'}
+              </span>
             </div>
           </div>
         </div>
