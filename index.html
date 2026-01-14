@@ -191,7 +191,7 @@
       if (editingExercise) {
         const updated = exercises.map(ex =>
           ex.id === editingExercise.id
-            ? { ...newExercise, id: editingExercise.id, reps: parseInt(newExercise.reps), shelved: newExercise.shelved || false }
+            ? { ...newExercise, id: editingExercise.id, reps: parseInt(newExercise.reps), shelved: newExercise.shelved || false, icon: newExercise.icon } // Added icon
             : ex
         );
         saveExercises(updated);
@@ -200,7 +200,8 @@
           id: Date.now(),
           ...newExercise,
           reps: parseInt(newExercise.reps),
-          shelved: newExercise.shelved || false
+          shelved: newExercise.shelved || false,
+          icon: newExercise.icon // Added icon
         };
         saveExercises([...exercises, exercise]);
       }
@@ -393,28 +394,40 @@ function renderTodayExercise(ex) {
     }
 
     function renderHabitCard(ex) {
-      return `
-        <div class="p-4 bg-gray-800 rounded-2xl relative" data-exercise-id="${ex.id}">
-          <button onclick="deleteExercise(${ex.id})" class="absolute top-3 right-3 p-1 text-gray-400 hover:text-red-500 transition-colors">✕</button>
-          <div class="flex justify-between items-start mb-1 pr-7">
-            <h3 class="text-xl font-black uppercase tracking-wide ${ex.shelved ? 'text-cyan-400' : 'text-white'}" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); letter-spacing: 0.05em;">
-              ${ex.name}
-            </h3>
-          </div>
-          <div class="flex justify-center my-2">
-            <div class="text-orange-500 font-bold text-lg">${ex.reps} reps${ex.sets > 1 ? ` × ${ex.sets}` : ''}</div>
-          </div>
-          ${ex.description ? `<p class="text-gray-400 text-xs mb-2 whitespace-pre-wrap">${ex.description}</p>` : ''}
-          <div class="flex justify-between items-center">
-            <div class="flex gap-1">
-              ${ex.days.map(day => `<span class="px-2 py-0.5 bg-gray-700 rounded-lg text-xs">${day}</span>`).join('')}
-            </div>
-            <button onclick="editExercise(${ex.id})" class="text-orange-500 text-xs font-bold px-2 py-1 hover:bg-gray-700 rounded-lg transition-colors">
-              Edit
-            </button>
-          </div>
+  return `
+    <div class="p-4 bg-gray-800 rounded-2xl relative overflow-hidden group" data-exercise-id="${ex.id}">
+      
+      ${ex.icon ? `
+        <div class="absolute -bottom-2 -right-2 w-24 h-24 text-orange-500 opacity-10 pointer-events-none transform rotate-12 transition-transform group-hover:rotate-0">
+          ${ex.icon}
         </div>
-      `;
+      ` : ''}
+
+      <button onclick="deleteExercise(${ex.id})" class="absolute top-3 right-3 p-1 text-gray-400 hover:text-red-500 transition-colors z-20">✕</button>
+      
+      <div class="relative z-10"> <div class="flex justify-between items-start mb-1 pr-7">
+          <h3 class="text-xl font-black uppercase tracking-wide ${ex.shelved ? 'text-cyan-400' : 'text-white'}" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); letter-spacing: 0.05em;">
+            ${ex.name}
+          </h3>
+        </div>
+        
+        <div class="flex justify-center my-2">
+          <div class="text-orange-500 font-bold text-lg">${ex.reps} reps${ex.sets > 1 ? ` × ${ex.sets}` : ''}</div>
+        </div>
+        
+        ${ex.description ? `<p class="text-gray-400 text-xs mb-2 whitespace-pre-wrap">${ex.description}</p>` : ''}
+        
+        <div class="flex justify-between items-center">
+          <div class="flex gap-1">
+            ${ex.days.map(day => `<span class="px-2 py-0.5 bg-gray-700 rounded-lg text-xs">${day}</span>`).join('')}
+          </div>
+          <button onclick="editExercise(${ex.id})" class="text-orange-500 text-xs font-bold px-2 py-1 hover:bg-gray-700 rounded-lg transition-colors">
+            Edit
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
     }
 
    function renderStatsPage() {
