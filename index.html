@@ -89,11 +89,9 @@
       const now = new Date();
       const todayDate = now.toISOString().split('T')[0];
       
-      // Define "Today's 2 AM"
       const twoAM = new Date();
       twoAM.setHours(2, 0, 0, 0);
 
-      // If it's before 2 AM, the "reset day" is technically yesterday
       let effectiveResetDay = todayDate;
       if (now < twoAM) {
         const yesterday = new Date(now);
@@ -101,18 +99,17 @@
         effectiveResetDay = yesterday.toISOString().split('T')[0];
       }
 
-      // If the stored reset day is different from the effective reset day, clear today's progress
       if (state.lastResetDate !== effectiveResetDay) {
         console.log("New day detected (past 2am). Resetting completions.");
         
-        // We keep the object but clear the current completions for the view
-        // In this specific app architecture, completions are keyed by date, 
-        // but clearing them ensures the UI progress bars reset.
+        // Update state and persist immediately
         state.completions = {}; 
         state.lastResetDate = effectiveResetDay;
         
         storage.save('pt-completions', {});
         storage.save('pt-last-reset', effectiveResetDay);
+        
+        if (typeof render === "function") render();
       }
     }
 
