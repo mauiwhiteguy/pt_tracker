@@ -87,22 +87,33 @@
      */
     function checkAndResetDailyData() {
       const now = new Date();
-      const todayDate = now.toISOString().split('T')[0];
       
-      const twoAM = new Date();
+      // Use a locale-string based key (YYYY-MM-DD) that respects local time
+      const getLocalKey = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
+
+      const todayDate = getLocalKey(now);
+      
+      const twoAM = new Date(now);
       twoAM.setHours(2, 0, 0, 0);
 
       let effectiveResetDay = todayDate;
+      
+      // If it's currently between midnight and 2 AM local time, 
+      // we are still on "yesterday's" exercise cycle.
       if (now < twoAM) {
         const yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
-        effectiveResetDay = yesterday.toISOString().split('T')[0];
+        effectiveResetDay = getLocalKey(yesterday);
       }
 
       if (state.lastResetDate !== effectiveResetDay) {
-        console.log("New day detected (past 2am). Resetting completions.");
+        console.log(`New day detected. Resetting to effective day: ${effectiveResetDay}`);
         
-        // Update state and persist immediately
         state.completions = {}; 
         state.lastResetDate = effectiveResetDay;
         
