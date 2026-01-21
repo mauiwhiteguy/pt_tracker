@@ -508,58 +508,58 @@ function renderTodayExercise(ex) {
     }
 
     function renderSettingsPage() {
-  return `
-    <div class="p-6 pb-24 animate-fade-in">
-      <h2 class="text-2xl font-bold mb-6 text-white">Settings</h2>
-      
-      <div class="space-y-6">
-        <section class="bg-gray-800 rounded-2xl p-5 border border-gray-700 shadow-xl">
-          <div class="flex items-center gap-3 mb-5">
-            <div class="p-2 bg-orange-500/20 rounded-lg">
-              <span class="text-orange-500">💾</span>
-            </div>
-            <h3 class="text-lg font-semibold text-white">Data Management</h3>
-          </div>
+      return `
+        <div class="p-6 pb-24 animate-fade-in">
+          <h2 class="text-2xl font-bold mb-6 text-white">Settings</h2>
           
-          <div class="grid grid-cols-1 gap-4">
-            <button onclick="copyDataToClipboard()" 
-              class="group w-full py-4 bg-gray-700/50 hover:bg-gray-700 rounded-xl font-medium transition-all flex items-center justify-between px-5 border border-gray-600">
-              <div class="flex items-center gap-3">
-                <span class="text-xl">📋</span>
-                <span class="text-gray-200">Copy to Clipboard</span>
+          <div class="space-y-6">
+            <section class="bg-gray-800 rounded-2xl p-5 border border-gray-700 shadow-xl">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="p-2 bg-orange-500/20 rounded-lg">
+                  <span class="text-orange-500">💾</span>
+                </div>
+                <h3 class="text-lg font-semibold text-white">Data Management</h3>
               </div>
-              <span class="text-xs text-gray-400 font-mono uppercase tracking-widest group-hover:text-orange-500">JSON</span>
-            </button>
-            
-            <button onclick="exportDataAsFile()" 
-              class="w-full py-4 bg-gray-700/50 hover:bg-gray-700 rounded-xl font-medium transition-all flex items-center gap-3 px-5 border border-gray-600">
-              <span class="text-xl">📥</span>
-              <span class="text-gray-200">Download Backup</span>
-            </button>
+              
+              <div class="grid grid-cols-1 gap-4">
+                <button onclick="copyDataToClipboard()" 
+                  class="group w-full py-4 bg-gray-700/50 hover:bg-gray-700 rounded-xl font-medium transition-all flex items-center justify-between px-5 border border-gray-600">
+                  <div class="flex items-center gap-3">
+                    <span class="text-xl">📋</span>
+                    <span class="text-gray-200">Copy to Clipboard</span>
+                  </div>
+                  <span class="text-xs text-gray-400 font-mono uppercase tracking-widest group-hover:text-orange-500">JSON</span>
+                </button>
+                
+                <button onclick="exportDataAsFile()" 
+                  class="w-full py-4 bg-gray-700/50 hover:bg-gray-700 rounded-xl font-medium transition-all flex items-center gap-3 px-5 border border-gray-600">
+                  <span class="text-xl">📥</span>
+                  <span class="text-gray-200">Download Backup</span>
+                </button>
 
-            <label class="w-full py-4 bg-orange-500/10 border border-orange-500/30 text-orange-500 hover:bg-orange-500 hover:text-white rounded-xl font-bold transition-all flex items-center justify-center gap-3 cursor-pointer shadow-lg shadow-orange-500/5">
-              <span class="text-xl">📤</span>
-              <span>Import JSON File</span>
-              <input type="file" accept=".json" onchange="handleImport(event)" class="hidden">
-            </label>
+                <label class="w-full py-4 bg-orange-500/10 border border-orange-500/30 text-orange-500 hover:bg-orange-500 hover:text-white rounded-xl font-bold transition-all flex items-center justify-center gap-3 cursor-pointer shadow-lg shadow-orange-500/5">
+                  <span class="text-xl">📤</span>
+                  <span>Import JSON File</span>
+                  <input type="file" accept=".json" onchange="handleImport(event)" class="hidden">
+                </label>
+              </div>
+              
+              <div class="mt-6 p-4 bg-gray-900/50 rounded-lg border border-gray-700/50">
+                <p class="text-[11px] text-gray-500 uppercase font-bold tracking-wider mb-1">Warning</p>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                  Importing a file will <strong>permanently overwrite</strong> your current habits and progress. 
+                  Always download a backup before importing.
+                </p>
+              </div>
+            </section>
+            
+            <div class="text-center pt-4">
+              <p class="text-xs text-gray-600">Version 1.2.0 • Data is stored locally • Resets daily at 2:00 AM</p>
+            </div>
           </div>
-          
-          <div class="mt-6 p-4 bg-gray-900/50 rounded-lg border border-gray-700/50">
-            <p class="text-[11px] text-gray-500 uppercase font-bold tracking-wider mb-1">Warning</p>
-            <p class="text-xs text-gray-400 leading-relaxed">
-              Importing a file will <strong>permanently overwrite</strong> your current habits and progress. 
-              Always download a backup before importing.
-            </p>
-          </div>
-        </section>
-        
-        <div class="text-center pt-4">
-          <p class="text-xs text-gray-600">Version 1.2.0 • Data is stored locally • Resets daily at 2:00 AM</p>
         </div>
-      </div>
-    </div>
-  `;
-}
+      `;
+    }
 
     function renderAddModal() {
       const { newExercise, editingExercise } = state;
@@ -665,55 +665,50 @@ function renderTodayExercise(ex) {
     // --- Import/Export Logic ---
 
 async function copyDataToClipboard() {
-  const dataString = JSON.stringify(state, null, 2);
-  try {
-    await navigator.clipboard.writeText(dataString);
-    alert('Data copied to clipboard! Save it in a safe place.');
-  } catch (err) {
-    alert('Failed to copy data. Please try again.');
-  }
-}
-
-function exportDataAsFile() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-  const downloadAnchorNode = document.createElement('a');
-  downloadAnchorNode.setAttribute("href", dataStr);
-  downloadAnchorNode.setAttribute("download", `habit_tracker_backup_${new Date().toISOString().split('T')[0]}.json`);
-  document.body.appendChild(downloadAnchorNode);
-  downloadAnchorNode.click();
-  downloadAnchorNode.remove();
-}
-
-function handleImport(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const importedData = JSON.parse(e.target.result);
-      
-      // We check for YOUR specific keys: exercises and completions
-      if (importedData.exercises && importedData.completions) {
-        if (confirm('This will overwrite your current habits and progress. Are you sure?')) {
-          state = { ...state, ...importedData };
-          
-          // Save using your existing storage utilities
-          storage.save('pt-exercises', state.exercises);
-          storage.save('pt-completions', state.completions);
-          
-          render(); // Refresh the UI
-          alert('Import successful!');
-        }
-      } else {
-        alert('Invalid backup file format. Could not find exercises or completions.');
+      const dataString = JSON.stringify(state, null, 2);
+      try {
+        await navigator.clipboard.writeText(dataString);
+        alert('Data copied to clipboard!');
+      } catch (err) {
+        alert('Failed to copy data.');
       }
-    } catch (err) {
-      alert('Error reading file. Make sure it is a valid JSON backup.');
     }
-  };
-  reader.readAsText(file);
-}
+
+    function exportDataAsFile() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", `habit_tracker_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+
+    function handleImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          if (importedData.exercises && importedData.completions) {
+            if (confirm('Overwrite current data?')) {
+              state = { ...state, ...importedData };
+              storage.save('pt-exercises', state.exercises);
+              storage.save('pt-completions', state.completions);
+              render();
+              alert('Import successful!');
+            }
+          } else {
+            alert('Invalid file format.');
+          }
+        } catch (err) {
+          alert('Error reading file.');
+        }
+      };
+      reader.readAsText(file);
+    }
     
 function renderBottomNav() {
   const { currentPage } = state;
